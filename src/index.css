@@ -1,0 +1,164 @@
+@import "@fontsource/orbitron/400.css";
+@import "@fontsource/orbitron/700.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 187 94% 43%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 263 70% 50%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --success: 158 64% 52%;
+    --success-foreground: 222 47% 11%;
+
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 187 94% 43%;
+
+    --radius: 0.75rem;
+
+    /* Custom cyberpunk colors */
+    --neon-cyan: 187 94% 43%;
+    --neon-red: 0 84% 60%;
+    --neon-amber: 38 92% 50%;
+    --neon-purple: 263 70% 50%;
+    --neon-blue: 217 91% 60%;
+
+    /* Gradients */
+    --gradient-voice: linear-gradient(135deg, hsl(263 70% 50%), hsl(217 91% 60%));
+    --gradient-critical: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 40%));
+    --gradient-success: linear-gradient(135deg, hsl(158 64% 52%), hsl(158 64% 40%));
+    --gradient-cyber: linear-gradient(135deg, hsl(187 94% 43%), hsl(263 70% 50%));
+
+    /* Shadows and glows */
+    --glow-cyan: 0 0 20px hsl(187 94% 43% / 0.5);
+    --glow-red: 0 0 20px hsl(0 84% 60% / 0.5);
+    --glow-purple: 0 0 20px hsl(263 70% 50% / 0.5);
+    --glow-success: 0 0 20px hsl(158 64% 52% / 0.5);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+    /* Prevent horizontal scroll from animations */
+    overflow-x: hidden; 
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+  }
+}
+
+@layer utilities {
+  /* --- 1. EXISTING UTILITIES (KEPT) --- */
+  .font-display { font-family: 'Orbitron', sans-serif; }
+  .font-body { font-family: 'Inter', sans-serif; }
+  
+  .glow-cyan { box-shadow: var(--glow-cyan); }
+  .glow-red { box-shadow: var(--glow-red); }
+  .glow-purple { box-shadow: var(--glow-purple); }
+  .glow-success { box-shadow: var(--glow-success); }
+
+  .text-glow-cyan { text-shadow: 0 0 10px hsl(187 94% 43% / 0.8); }
+  .text-glow-red { text-shadow: 0 0 10px hsl(0 84% 60% / 0.8); }
+
+  .gradient-voice { background: var(--gradient-voice); }
+  .gradient-critical { background: var(--gradient-critical); }
+  .gradient-success { background: var(--gradient-success); }
+  .gradient-cyber { background: var(--gradient-cyber); }
+
+  /* --- 2. NEW FUTURISTIC EFFECTS (ADDED) --- */
+
+  /* The Moving Cyber Grid Background */
+  .cyber-grid-bg {
+    background-color: hsl(var(--background));
+    background-image: 
+      linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    animation: gridMove 20s linear infinite;
+  }
+
+  /* Floating Glow Orbs */
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+    opacity: 0.4;
+    animation: float 10s ease-in-out infinite;
+  }
+
+  /* Glassmorphism Panel */
+  .glass-panel {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  /* --- 3. ANIMATION KEYFRAMES --- */
+  
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.1); }
+  }
+
+  /* Scanner Animation for Vehicle Cards */
+  @keyframes scanline {
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(200%); opacity: 0; }
+  }
+
+  /* Typing Animation (Kept from your original) */
+  .animate-typing {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing 2s steps(40, end);
+  }
+
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+}
