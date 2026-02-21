@@ -67,7 +67,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       },
     },
     {
-      command: ['terminate session', 'log out', 'go to login'],
+      command: ['terminate session', 'log out', 'go to login', 'logout'],
       callback: ({ resetTranscript }: any) => {
         navigate('/login');
         speak('Terminating session. Goodbye.');
