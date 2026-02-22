@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface VoiceContextType {
   isListening: boolean;
-  isThinking: boolean; // NEW: Tells UI the AI is processing
+  isThinking: boolean;
   transcript: string;
   startListening: () => void;
   stopListening: () => void;
@@ -20,25 +20,28 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isThinking, setIsThinking] = useState(false);
 
   // --- THE AI HANDLER ---
-  const handleAIQuery = async (question: string, resetTranscript: () => void) => {
-    resetTranscript(); // Clear the text immediately
+  const handleAIQuery = async (question: string, resetFn: () => void) => {
+    if (!question || question.trim() === '') return;
+    
+    resetFn(); 
     setIsThinking(true);
     toast.info(`Transmitting to AI: "${question}"`);
 
     try {
-      // ⚠️ THIS IS WHERE YOUR FRONTEND TALKS TO YOUR BACKEND!
-      // Example for when your Express backend is ready:
-      // const res = await axios.post('http://localhost:5000/api/chat', { prompt: question });
-      // const answer = res.data.answer;
+      const response = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: question }),
+      });
 
-      // 🛑 For testing right now, we will use a MOCK answer:
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Fake network delay
-      const answer = `I received your query about ${question}. All fleet systems are currently optimal.`;
-
-      speak(answer);
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      const data = await response.json();
+      speak(data.answer);
       toast.success("AI Response received");
+      
     } catch (error) {
-      console.error(error);
+      console.error("Backend connection failed:", error);
       toast.error("Failed to connect to AI Core.");
       speak("Error connecting to server.");
     } finally {
@@ -46,8 +49,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // --- ONLY STRICT NAVIGATION COMMANDS GO HERE NOW ---
   const commands = [
-    // ... [KEEP YOUR EXISTING NAVIGATION COMMANDS HERE] ...
     {
       command: ['go to overview', 'go to home', 'open dashboard'],
       callback: ({ resetTranscript }: any) => {
@@ -58,7 +61,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       },
     },
     {
-      command: ['go to bookings', 'open bookings', 'service center', 'service centre', 'go to booking'],
+      command: ['go to bookings', 'open bookings', 'service center'],
       callback: ({ resetTranscript }: any) => {
         navigate('/bookings');
         speak('Opening service center bookings');
@@ -67,7 +70,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       },
     },
     {
-      command: ['terminate session', 'log out', 'go to login', 'logout'],
+      command: ['terminate session', 'log out', 'go to login'],
       callback: ({ resetTranscript }: any) => {
         navigate('/login');
         speak('Terminating session. Goodbye.');
@@ -79,23 +82,47 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       command: ['clear', 'clear transcript'],
       callback: ({ resetTranscript }: any) => resetTranscript()
     },
-    // --- 🤖 NEW: THE CONVERSATIONAL AI WAKE WORD ---
-    {
-      // The '*' catches everything you say after the wake word!
-      command: ['ask auto *', 'hey auto *', 'computer *'],
-      callback: (question: string, { resetTranscript }: any) => handleAIQuery(question, resetTranscript)
-    }
   ];
 
-  const { transcript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition({ commands });
+  const { transcript, resetTranscript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition({ commands });
 
+  // --- 🤖 THE MAGIC SILENCE DETECTOR (BYPASSES LIBRARY BUGS) ---
+  useEffect(() => {
+    // If the AI is already thinking, or there is no text, do nothing.
+    if (!transcript || isThinking) return;
+
+    const lowerCaseTranscript = transcript.toLowerCase();
+    
+    // Check if the wake word is anywhere in the transcript
+    if (
+      lowerCaseTranscript.includes('hey auto') || 
+      lowerCaseTranscript.includes('ask auto') || 
+      lowerCaseTranscript.includes('computer')
+    ) {
+      
+      // If we found the wake word, start a 1.5 second countdown.
+      // Every time a new word is spoken, this countdown resets.
+      // When you finally stop talking for 1.5s, it fires!
+      const timer = setTimeout(() => {
+        // Cut out the wake word and grab just the question
+        const cleanQuestion = transcript.replace(/.*(?:hey auto|ask auto|computer)\s+/i, '').trim();
+        
+        console.log("🎯 SILENCE DETECTED! Auto-firing question:", cleanQuestion);
+        handleAIQuery(cleanQuestion, resetTranscript);
+      }, 2000);
+
+      // Cleanup function to reset the timer if you keep talking
+      return () => clearTimeout(timer);
+    }
+  }, [transcript, isThinking]); // Run this check every single time the transcript changes
+
+  // Sync mic state
   useEffect(() => {
     setIsListening(listening);
   }, [listening]);
 
   const speak = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
-    // Give it a slightly higher pitch/rate for a robotic feel if you want!
     utterance.pitch = 1.1; 
     utterance.rate = 1.05;
     window.speechSynthesis.speak(utterance);
