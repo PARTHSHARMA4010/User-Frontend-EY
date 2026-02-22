@@ -30,7 +30,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     toast.info(`Transmitting to AI: "${question}"`);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch('https://user-voice-backend.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: question, context_data: pageContext }),
