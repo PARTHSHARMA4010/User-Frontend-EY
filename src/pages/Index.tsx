@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { StatCard } from "@/components/StatCard";
 import { VehicleCard } from "@/components/VehicleCard";
 import { SensorModal } from "@/components/SensorModal";
+import { useVoice } from "@/contexts/VoiceContext";
 
 // ... (Interface Vehicle code remains same) ...
 interface Vehicle {
@@ -20,6 +21,7 @@ interface Vehicle {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { setPageContext } = useVoice(); // 2. Grab the function
   const [user, setUser] = useState<any>(null);
   const [fleet, setFleet] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +61,12 @@ const Index = () => {
     return () => clearInterval(interval);
 
   }, [navigate]); 
+
+  useEffect(() => {
+    if (fleet && fleet.length > 0) {
+      setPageContext(fleet);
+    }
+  }, [fleet, setPageContext]);
 
 
   if (loading) return <div className="min-h-screen bg-[#050b14] flex items-center justify-center text-cyan-400 font-mono animate-pulse">ESTABLISHING SATELLITE UPLINK...</div>;

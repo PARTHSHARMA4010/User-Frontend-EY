@@ -10,6 +10,7 @@ interface VoiceContextType {
   startListening: () => void;
   stopListening: () => void;
   speak: (text: string) => void;
+  setPageContext: (data: any) => void; // <-- NEW
 }
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const navigate = useNavigate();
   const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [pageContext, setPageContext] = useState<any>(null); // <-- NEW STATE
 
   // --- THE AI HANDLER ---
   const handleAIQuery = async (question: string, resetFn: () => void) => {
@@ -31,7 +33,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const response = await fetch('http://localhost:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: question }),
+        body: JSON.stringify({ prompt: question, context_data: pageContext }),
       });
 
       if (!response.ok) throw new Error('Network response was not ok');
@@ -109,7 +111,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         
         console.log("🎯 SILENCE DETECTED! Auto-firing question:", cleanQuestion);
         handleAIQuery(cleanQuestion, resetTranscript);
-      }, 2000);
+      }, 2200);
 
       // Cleanup function to reset the timer if you keep talking
       return () => clearTimeout(timer);
@@ -120,6 +122,22 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     setIsListening(listening);
   }, [listening]);
+
+  // --- 🧹 THE JUNK CLEANER (Auto-clear transcript after 5 seconds) ---
+  useEffect(() => {
+    // If there is no text, or the AI is actively thinking, do nothing
+    if (!transcript || isThinking) return;
+
+    // Set a timer to wipe the text after 5 seconds of silence
+    const clearTimer = setTimeout(() => {
+      console.log("🧹 Clearing old transcript to keep UI clean...");
+      resetTranscript();
+    }, 5000);
+
+    // CLEANUP: If the user says another word before 5 seconds is up, 
+    // this cancels the timer and starts the 5-second countdown over again!
+    return () => clearTimeout(clearTimer);
+  }, [transcript, isThinking, resetTranscript]);
 
   const speak = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -132,7 +150,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const stopListening = () => SpeechRecognition.stopListening();
 
   return (
-    <VoiceContext.Provider value={{ isListening, isThinking, transcript, startListening, stopListening, speak }}>
+    <VoiceContext.Provider value={{ isListening, isThinking, transcript, startListening, stopListening, speak, setPageContext }}>
       {children}
     </VoiceContext.Provider>
   );
