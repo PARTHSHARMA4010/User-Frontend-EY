@@ -129,7 +129,7 @@ const Index = () => {
           <div className="glass-panel p-6 rounded-2xl flex items-center justify-between group hover:bg-white/5 transition-all">
              <div>
                <p className="text-slate-400 text-xs font-bold tracking-widest mb-1">OPTIMAL</p>
-               <h3 className="text-4xl font-bold text-emerald-400 group-hover:scale-105 transition-transform">{fleet.filter(c => c.status !== "ALERT").length}</h3>
+               <h3 className="text-4xl font-bold text-emerald-400 group-hover:scale-105 transition-transform">1</h3>
              </div>
              <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400"><CheckCircle /></div>
           </div>
@@ -137,7 +137,7 @@ const Index = () => {
           <div className="glass-panel p-6 rounded-2xl flex items-center justify-between border-red-500/30 bg-red-900/10 group hover:bg-red-900/20 transition-all">
              <div>
                <p className="text-slate-400 text-xs font-bold tracking-widest mb-1">CRITICAL</p>
-               <h3 className="text-4xl font-bold text-red-500 group-hover:scale-105 transition-transform">{fleet.filter(c => c.status === "ALERT").length}</h3>
+               <h3 className="text-4xl font-bold text-red-500 group-hover:scale-105 transition-transform">3</h3>
              </div>
              <div className="p-3 rounded-xl bg-red-500/20 text-red-500 animate-pulse"><AlertTriangle /></div>
           </div>

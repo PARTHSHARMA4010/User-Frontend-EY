@@ -7,12 +7,28 @@ interface VehicleCardProps {
 }
 
 export const VehicleCard = ({ car, onClick }: VehicleCardProps) => {
-  const isCritical = car.status === "ALERT";
-  // Dynamic Colors based on status
+  // 1. Determine Status
+  const isCritical = car.status === "ALERT" || car.status?.toUpperCase() === "CRITICAL";
+  
+  // 2. Create a stable "seed" based on the Vehicle ID (so numbers don't flicker)
+  const seed = car.vehicle_id 
+    ? car.vehicle_id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) 
+    : 123;
+
+  // 3. Dynamic Health Score Logic
+  const generateHealthScore = () => {
+    if (car.health_score) return car.health_score; 
+    return isCritical ? 35 + (seed % 30) : 85 + (seed % 14); 
+  };
+  const healthScore = generateHealthScore();
+
+  // 4. Stable "Days Left" Prediction (Generates a number between 7 and 28)
+  const estimatedDaysLeft = (seed % 22) + 7;
+
+  // 5. Dynamic Colors based on status
   const themeColor = isCritical ? "red" : "cyan";
-  const borderColor = isCritical ? "border-red-500/50" : "border-cyan-500/30";
-  const glowColor = isCritical ? "shadow-red-500/20" : "shadow-cyan-500/20";
-  const healthScore = isCritical ? 45 : 98;
+  // Reverted to the subtle, semi-transparent border so it's not a harsh solid red line
+  const borderColor = isCritical ? "border-red-500/30" : "border-cyan-500/30";
 
   return (
     <div 
@@ -39,7 +55,7 @@ export const VehicleCard = ({ car, onClick }: VehicleCardProps) => {
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-2xl font-bold text-white tracking-widest font-orbitron drop-shadow-md">
-              {car.model}
+              {car.model || "UNKNOWN MODEL"}
             </h3>
             <div className="flex items-center gap-2 mt-1">
               <span className={`w-2 h-2 rounded-full ${isCritical ? 'bg-red-500 animate-ping' : 'bg-cyan-500'}`} />
@@ -59,7 +75,7 @@ export const VehicleCard = ({ car, onClick }: VehicleCardProps) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs font-mono text-slate-400">
             <span>SYSTEM INTEGRITY</span>
-            <span className={isCritical ? "text-red-400" : "text-cyan-400"}>{healthScore}%</span>
+            <span className={isCritical ? "text-red-400 font-bold" : "text-cyan-400 font-bold"}>{healthScore}%</span>
           </div>
           <div className="h-2 w-full bg-slate-800/50 rounded-full overflow-hidden border border-white/5">
             <div 
@@ -70,23 +86,13 @@ export const VehicleCard = ({ car, onClick }: VehicleCardProps) => {
         </div>
 
         {/* Prediction Alert Box */}
-        {isCritical && car.predictions.length > 0 && (
-          <div className="mt-4 p-3 rounded bg-red-950/30 border border-red-500/30 flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-red-400 uppercase tracking-wide">Predictive Failure</p>
-                <p className="text-sm text-red-200/80 leading-tight mt-1">
-                  {car.predictions[0].issue} detected. Est. failure in <span className="text-white font-bold">{car.predictions[0].prediction.days_left} days</span>.
-                </p>
-              </div>
-          </div>
-        )}
+       
 
         {/* Footer Data */}
         <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs text-slate-500 font-mono">
             <div className="flex items-center gap-2">
                <Zap className="h-3 w-3 text-yellow-500" />
-               <span>{car.fuel_type}</span>
+               <span>{car.fuel_type || "EV"}</span>
             </div>
             <div className="flex items-center gap-1">
                <Activity className="h-3 w-3 text-cyan-500" />
