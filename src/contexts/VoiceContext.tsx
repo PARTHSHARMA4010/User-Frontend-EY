@@ -54,7 +54,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // --- ONLY STRICT NAVIGATION COMMANDS GO HERE NOW ---
   const commands = [
     {
-      command: ['go to overview', 'go to home', 'open dashboard'],
+      command: ['go to overview', 'go to home', 'open dashboard', "go to dashboard"],
       callback: ({ resetTranscript }: any) => {
         navigate('/');
         speak('Opening overview');
@@ -63,7 +63,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       },
     },
     {
-      command: ['go to bookings', 'open bookings', 'service center'],
+      command: ['go to bookings', 'open bookings', 'service center', 'go to booking', 'service centre'],
       callback: ({ resetTranscript }: any) => {
         navigate('/bookings');
         speak('Opening service center bookings');
@@ -72,7 +72,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       },
     },
     {
-      command: ['terminate session', 'log out', 'go to login'],
+      command: ['terminate session', 'log out', 'go to login', 'logout'],
       callback: ({ resetTranscript }: any) => {
         navigate('/login');
         speak('Terminating session. Goodbye.');
